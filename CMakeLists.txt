@@ -88,8 +88,8 @@ IF(WIN32)
     ENDIF()
     # Fix issue: https://github.com/RainerKuemmerle/g2o/issues/66
     #            Link error LNK2005 due to duplicated symbols
-    add_definitions("/Ob2")	
-	# Fix other stupid warnings:
+    add_definitions("/Ob2")
+    # Fix other stupid warnings:
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)  # Avoid deprecated fprintf(), etc.
     add_definitions("/nologo")
     add_definitions("/wd4244") # Conversion from double -> int
@@ -242,6 +242,14 @@ endif()
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${g2o_CXX_FLAGS}")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${g2o_C_FLAGS}")
 
+if(WIN32 AND NOT CYGWIN)
+  set(DEF_INSTALL_CMAKE_DIR cmake)
+else()
+  set(DEF_INSTALL_CMAKE_DIR lib/cmake/g2o)
+endif()
+set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+  "Installation directory for CMake files")
+
 # Find Eigen3
 FIND_PACKAGE(Eigen3 REQUIRED)
 
@@ -256,8 +264,12 @@ SET(G2O_SHARED_LIBS ${BUILD_SHARED_LIBS})
 SET(G2O_LGPL_SHARED_LIBS ${BUILD_LGPL_SHARED_LIBS})
 SET(G2O_CXX_COMPILER "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER}")
 configure_file(config.h.in ${PROJECT_BINARY_DIR}/g2o/config.h)
+configure_file(g2oConfig.cmake.in ${PROJECT_BINARY_DIR}/g2oConfig.cmake @ONLY)
 include_directories(${PROJECT_BINARY_DIR})
 INSTALL(FILES ${PROJECT_BINARY_DIR}/g2o/config.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/g2o)
+INSTALL(FILES
+  ${PROJECT_BINARY_DIR}/g2oConfig.cmake
+  DESTINATION ${INSTALL_CMAKE_DIR})
 
 # Include the subdirectories
 ADD_SUBDIRECTORY(EXTERNAL)
